@@ -19,8 +19,8 @@ namespace KeyboardMenu
         public Session(string LeftPlayerName, string RightPlayerName)
         {
             ball = new Ball();
-            LeftPlayer = new Player("Serega");
-            RightPlayer = new Player("Ivan");
+            LeftPlayer = new Player(LeftPlayerName);
+            RightPlayer = new Player(RightPlayerName);
             field = new Field();
             ScoreBoard = new Scoreboard();
             StartTime = DateTime.Now;
@@ -33,9 +33,11 @@ namespace KeyboardMenu
             Console.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y);
             Console.WriteLine($"{LeftPlayer.Points} | {RightPlayer.Points}");
 
-            Console.SetCursorPosition(ScoreBoard.X - 10, ScoreBoard.Y + 1);
+            Console.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y + 1);
+            Console.WriteLine($"{LeftPlayer.Name}   |   {RightPlayer.Name}");
+
             Console.WriteLine(DateTime.Now.ToShortTimeString());
-            //Console.WriteLine($"{player1}   |   {player2}");
+
 
 
             Console.SetCursorPosition(ball.X, ball.Y);
@@ -216,7 +218,7 @@ namespace KeyboardMenu
 
     public class Player
     {
-        public string Name { get; set; } = "Default";
+        public string Name { get; set; }
         public int Points { get; set; }
         public Rackets Racket { get; set; }
 
