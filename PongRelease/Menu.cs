@@ -1,9 +1,5 @@
-﻿using KeyboardMenu;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Menu;
+
 using static System.Console;
 
 namespace KeyboardMenu
@@ -18,6 +14,7 @@ namespace KeyboardMenu
                 Console.CursorVisible = false;
                 Game myGame = new Game();
                 myGame.Start();
+
 
             }
         }
@@ -149,35 +146,45 @@ namespace KeyboardMenu
         private void PlayGame()
         {
             Clear();
-            Session session = new Session(PlayerName1(), PlayerName2());
+            Session session = new Session(PlayerName(out string Input, 1), PlayerName(out string Input2, 2));
             session.Start();
+            using (ApplicationContext db = new())
+            {
+                db.Database.EnsureCreated();
+                Player LeftPlayer = new Player { Name = Input, Points = session.LeftPlayer.Points };
+                Player RightPlayer = new Player { Name = Input2, Points = session.RightPlayer.Points };
+                db.Players.AddRange(LeftPlayer, RightPlayer);
+                db.SaveChanges();
+            }
         }
-        public string PlayerName1()
+        public string PlayerName(out string Input, int number)
         {
             Clear();
-            Console.WriteLine("Введите имя первого игрока");
-            string Input = Console.ReadLine();
+            Console.WriteLine($"Введите имя игрока N{number}");
+            Input = Console.ReadLine();
             if (Input == null)
             {
                 Input = "DefaultPlayer1";
                 return ($"{Input}");
             }
+            Clear();
             return Input;
 
         }
-        public string PlayerName2()
+        /*public string PlayerName2(out string Input)
         {
             Clear();
             Console.WriteLine("Введите имя первого игрока");
-            string Input = Console.ReadLine();
+            Input = Console.ReadLine();
             if (Input == null)
             {
                 Input = "DefaultPlayer2";
                 return ($"{Input}");
             }
+            Clear();
             return Input;
-
-        }
+            
+        }*/
 
         private void DisplayAboutInfo()
         {
@@ -212,6 +219,19 @@ Borisov Ivan
         private void MatchHistory()
         {
             Clear();
+            using (ApplicationContext db = new())
+            {
+                var Players = db.Players.ToList();
+                foreach (var item in Players)
+                {
+
+                    Console.WriteLine($"Name : {item.Name}, Points : {item.Points}");
+
+
+                }
+            }
+            Console.ReadKey();
+            RunMainMenu();
             //Вводить данные из БД
         }
         private void HowtoPlay()
@@ -246,4 +266,5 @@ https://www.youtube.com/watch?v=dQw4w9WgXcQ
         }
     }
 }
+
 
