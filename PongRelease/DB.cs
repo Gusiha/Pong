@@ -46,6 +46,7 @@ namespace Menu
             }
         }
 
+        // Константы
         public const string Preview = @"
 
 ██████╗ ██╗███╗   ██╗ ██████╗     ██████╗  ██████╗ ███╗   ██╗ ██████╗      ██████╗  █████╗ ███╗   ███╗███████╗
@@ -75,6 +76,14 @@ Arseniy Mazurenko
 Borisov Ivan
 
 ";
+
+        // Пользовательское перечисление (enum-ы)
+        public enum GameSettings
+        {
+            fieldLength = 50,
+            fieldWidth = 15,
+            speed = 80
+        }
     }
     
 

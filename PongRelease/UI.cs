@@ -1,7 +1,10 @@
-﻿namespace KeyboardMenu
+﻿using System.Diagnostics;
+
+namespace KeyboardMenu
 {
     static class UI
     {
+        // Методы типа
         public static void PrintMatchHistory(Player item)
         {
             Console.WriteLine($"Name : {item.Name}, Points : {item.Points}");
@@ -29,6 +32,17 @@
             Console.WriteLine(str);
         }
 
+        public static void Print(char ball)
+        {
+            Console.WriteLine(ball);
+        }
+
+        public static void Print(TimeSpan GameDuration)
+        {
+            Console.WriteLine(GameDuration);
+        }
+
+
         public static void ResetColor()
         {
             Console.ResetColor();
@@ -46,6 +60,7 @@
             Console.BackgroundColor = ConsoleColor.Black;
         }
 
+        // Метод с параметром ref
         public static void PrintMenuElement(ref string currentOption)
         {
             Console.WriteLine($" << {currentOption} >> \n");
@@ -59,6 +74,22 @@
         public static void MessageToInputName(int number)
         {
             Console.WriteLine($"Введите имя игрока N{number}");
+        }
+
+        public static void SetCursorPosition(int x, int y)
+        {
+            Console.SetCursorPosition(x, y);
+        }
+
+        public static void PrintScores(int LeftPlayerPoints, int RightPlayerPoints)
+        {
+            Console.WriteLine($"{LeftPlayerPoints} | {RightPlayerPoints}");
+        }
+
+
+        public static void PrintPlayerNames(string LeftPlayerName, string RightPlayerName)
+        {
+            Console.WriteLine($"{LeftPlayerName}   |   {RightPlayerName}");
         }
     }
 }

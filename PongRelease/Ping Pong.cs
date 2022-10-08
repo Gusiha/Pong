@@ -1,8 +1,8 @@
 ﻿using Menu;
-using System.Diagnostics;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics;
 
-using static System.Console;
+
 
 //TODO Общая задача - при нажатии "Exit" все закрывалось сразу(вместе с консолью)
 namespace KeyboardMenu
@@ -38,26 +38,26 @@ namespace KeyboardMenu
 
         public void UpdateRound()
         {
-            Console.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y);
-            Console.WriteLine($"{LeftPlayer.Points} | {RightPlayer.Points}");
+            UI.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y);
+            UI.PrintScores(LeftPlayer.Points, RightPlayer.Points);
 
-            Console.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y + 1);
-            Console.WriteLine($"{LeftPlayer.Name}   |   {RightPlayer.Name}");
+            UI.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y + 1);
+            UI.PrintPlayerNames(LeftPlayer.Name, RightPlayer.Name);
 
             //TODO перенести это в данные: DateTime.Now.ToShortTimeString();
 
-            Console.SetCursorPosition(ball.X, ball.Y);
-            Console.WriteLine(Ball.BallTile);
-            Thread.Sleep(100); //Adds a timer so that the players have time to react
+            UI.SetCursorPosition(ball.X, ball.Y);
+            UI.Print(Ball.BallTile);
+            Thread.Sleep((int)DataBase.GameSettings.speed); //Adds a timer so that the players have time to react
 
 
-            Console.SetCursorPosition(ball.X, ball.Y);
-            Console.WriteLine(" "); //Clears the previous position of the ball
+            UI.SetCursorPosition(ball.X, ball.Y);
+            UI.Print(" "); //Clears the previous position of the ball
 
             TimeSpan ts = GameDuration.Elapsed;
             string elapsedTime = String.Format("{0:00}:{1:00}", ts.Minutes, ts.Seconds);
-            Console.SetCursorPosition(Field.fieldLength / 2 - 2, Field.fieldWidth + 3);
-            Console.WriteLine(elapsedTime);
+            UI.SetCursorPosition(Field.fieldLength / 2 - 2, Field.fieldWidth + 3);
+            UI.Print(elapsedTime);
         }
         public void UpdateBall()
         {
@@ -88,10 +88,10 @@ namespace KeyboardMenu
         {
             for (int i = 1; i < Field.fieldWidth; i++)
             {
-                Console.SetCursorPosition(0, i);
-                Console.WriteLine(" ");
-                Console.SetCursorPosition(Field.fieldLength - 1, i);
-                Console.WriteLine(" ");
+                UI.SetCursorPosition(0, i);
+                UI.Print(" ");
+                UI.SetCursorPosition(Field.fieldLength - 1, i);
+                UI.Print(" ");
             }
         }
         public bool IsRightKnockBall()
@@ -117,10 +117,10 @@ namespace KeyboardMenu
         {
             for (int i = 0; i < Rackets.Length; i++)
             {
-                Console.SetCursorPosition(0, i + 1 + LeftPlayer.Racket.Height);
-                Console.WriteLine(Rackets.Tile);
-                Console.SetCursorPosition(Field.fieldLength - 1, i + 1 + RightPlayer.Racket.Height);
-                Console.WriteLine(Rackets.Tile);
+                UI.SetCursorPosition(0, i + 1 + LeftPlayer.Racket.Height);
+                UI.Print(Rackets.Tile);
+                UI.SetCursorPosition(Field.fieldLength - 1, i + 1 + RightPlayer.Racket.Height);
+                UI.Print(Rackets.Tile);
             }
         }
         public void Start()
@@ -135,7 +135,10 @@ namespace KeyboardMenu
                 {
                     UpdateRound();
                     UpdateBall();
+                    UI.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y);
+                    UI.Print($"{LeftPlayer.Points} | {RightPlayer.Points}");
 
+                    //TODO Исправить повторяющийся код
                     if (ball.X == 1)
                         if (!IsRightKnockBall()) { ball.isBallGoingRight = !ball.isBallGoingRight; }
                         else
@@ -143,14 +146,11 @@ namespace KeyboardMenu
                             RightPlayer.Points++;
                             ball.Y = Field.fieldWidth / 2;
                             ball.X = Field.fieldLength / 2;
-                            Console.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y);
-                            Console.WriteLine($"{LeftPlayer.Points} | {RightPlayer.Points}");
+
                             if (RightPlayer.Points == 1)
                             {
                                 GameDuration.Stop();
-                                //TODO DateTime.Now.ToShortTimeString() in database
-                                RightPlayer.Win();
-                                Console.WriteLine(GameDuration.Elapsed);
+                                RightPlayer.Win(GameDuration);
                                 FinishFlag = true;
                                 break;
                             }
@@ -162,32 +162,30 @@ namespace KeyboardMenu
                             LeftPlayer.Points++;
                             ball.Y = Field.fieldWidth / 2;
                             ball.X = Field.fieldLength / 2;
-                            Console.SetCursorPosition(ScoreBoard.X, ScoreBoard.Y);
-                            Console.WriteLine($"{LeftPlayer.Points} | {RightPlayer.Points}");
+
                             if (LeftPlayer.Points == 1)
                             {
                                 GameDuration.Stop();
-                                //TODO DateTime.Now.ToShortTimeString() in database
-                                LeftPlayer.Win();
-                                Console.WriteLine(GameDuration.Elapsed);
+                                LeftPlayer.Win(GameDuration);
                                 FinishFlag = true;
                                 break;
                             }
                         }
 
 
-
                 }
+
                 switch (Console.ReadKey().Key)
                 {
+
+                    //TODO Добавить в UI ConsoleKey
                     case ConsoleKey.Escape:
                         {
 
-                            Console.SetCursorPosition(Field.fieldLength / 2, Field.fieldWidth / 2);
-                            Console.WriteLine("_Paused");
+                            UI.SetCursorPosition(Field.fieldLength / 2, Field.fieldWidth / 2);
+                            UI.Print("_Paused");
                             Console.ReadKey();
-                            Clear();
-                            //TODO Добавить Update раунда и мяча
+                            UI.Clear();
                             break;
                         }
                     case ConsoleKey.UpArrow:
@@ -227,21 +225,23 @@ namespace KeyboardMenu
 
         }
     }
-
+    //TODO Возможно добавить все классы в DataBase
     public class Player
     {
+        // Свойства (автосвойства)
         public int PlayerId { get; set; }
         public string Name { get; set; }
         public int Points { get; set; }
         [NotMapped]
         public Rackets Racket { get; set; }
 
-        public void Win()
+        // Метод экземпляра
+        public void Win(Stopwatch GameDuration)
         {
-            Console.Clear();
-            Console.SetCursorPosition(0, 0);
-            Console.WriteLine($"{Name} победил!");
-            //TODO Вставить [Console.WriteLine(GameDuration.Elapsed);] после победы одного из игроков
+            UI.Clear();
+            UI.SetCursorPosition(0, 0);
+            UI.Print($"{Name} победил!");
+            UI.Print(GameDuration.Elapsed);
         }
 
         public Player()
@@ -257,17 +257,14 @@ namespace KeyboardMenu
         }
     }
 
-    public enum GameSettings
-    {
-        fieldLength = 50,
-        fieldWidth = 15
-    }
+
 
     public class Field
     {
         //Field
-        public static int fieldLength = (int)GameSettings.fieldLength;
-        public static int fieldWidth = (int)GameSettings.fieldWidth;
+        public static int fieldLength = (int)DataBase.GameSettings.fieldLength;
+        public static int fieldWidth = (int)DataBase.GameSettings.fieldWidth;
+
 
         public const char fieldTile = '#';
         public string line = string.Concat(Enumerable.Repeat(fieldTile, fieldLength));
@@ -275,11 +272,11 @@ namespace KeyboardMenu
         public void CreateField()
         {
             //Print the borders
-            Console.SetCursorPosition(0, 0);
-            Console.WriteLine(line);
+            UI.SetCursorPosition(0, 0);
+            UI.Print(line);
 
-            Console.SetCursorPosition(0, fieldWidth);
-            Console.WriteLine(line);
+            UI.SetCursorPosition(0, fieldWidth);
+            UI.Print(line);
         }
     }
 
